@@ -1,0 +1,4 @@
+3.3 PS/2 Keyboard
+=================
+Unlike video driver, CATernel's keyboard driver is similar to every kernel's keyboard support. However, since Keyboard is a serial device It uses almost a unified interface like any other PS/2 device. CATernel keyboard driver supports only one function which is a keyboard interrupt handler, Of course at this point a keyboard interrupt does not occur since CATernel busy wait on any I/O device.
+
