@@ -1,0 +1,56 @@
+Lately in CATernel first prototype has been put to and end since we reached a crossroads point. We had make up our mind to the overall design of the kernel. We had several Options: 1- Monolithic kernel, 2- ExoKernel, 3- μKernel.
+
+Of course the main dilemma would be betwee Monolithic and μKernel since most Exokernels made are for research purposes and not [rel life] daily kernels that an Operating system might use. However, a minimal Exokernel version of CATernel might be supported anyway since It won't be hard to implement.
+Here, we only stand between the Monolithic design and Micro design. those two designs in particular has been a huge dilemma for years, It has began with the famous Tanenbaum - Torvalds debate. But, Let's pause here for now and start listing the main differences between the Micro and Monolithic designs.
+
+*Monolithic Kernel design*
+Normally a kerenl consists of several entities moslty called "services", Like Process Management, File system management, Memory Management. A monolithic design is simple and old, but however effective. In a monolithic kernel all the kernel services are contained within one program. an example to that is the old UNIX of course, Linux and freeBSD. most of the time this (containing all services in one program) results in a huge code base which will result into hard debugging and bug tracking. and since kernel components only connect with each others in execusion flow It creates a huge dependencies for kernel components that are hard to track too, at this point I recall the name Andrew Tanenbaum called the monolithic kernel ("The Big Mess"). However, Monolithic kernels have advantages that might distinguish it from a microkernel, such as:
+1- It takes less code to write a monolithic kernel
+2- monolithic kernels jave relatively fewer bugs, since only way to context between services is using execusion flow and no external means are provided.
+3- They are also relatively fast since it is only one executable entity.
+
+In abstract form this is how monolithic kernel looks like:
+[Image]
+
+Since all services of a monolithic kernel lays into the kernel executable, system calls are used to achieve priveleged operations from user mode. System calls in monolithic kernels are much more than those in a Micro kernel since all privelegd services lays into kernel space. and system calls are basically interrupts, hence a code executing under a monolithic kernel will issue more interupts that the same code running under an Exokernel. However, Interrupts can hardly be an overhead since the scheduler can issues interrupts -somtimes- hundreds of times per second on normal Interactive operating systems.
+
+Monolithic kernels have some disadvantages too, some of them crucial and some toleratable:
+1- As mentioned before, monolithic kernel contains huge relations and dependencies. Thus, a failure of a part of the kernel will result in a major failure in the whole kernel. Thus less reliablility.
+2- Also monolithic kernels are hard to port, since -almost- the whole kernel needs to be re-written to support a different archeticture.
+
+
+
+
+*μKernels on the other hand*
+are more modular than monolithic kernels, since most of the kernel services are moved to user space. Like, Networking and File systems management. And (as the name states) the real kernel is very minimal containing the Memory mangement and process management services for instance. The services that are runnable in user space are called servers (will show why later) and they use the real kernel to get access to hardware. a typical microKernel provides an abstraction for hardware which will make servers interactions easier and will lessen the porting pain. Surprisingly, μKernels result into more number of system calls than monolithic kerenls, since all services will have to access kernel space to perform priveleged operations since most of the services rely on devices.
+Unlike monolithic kernels, μKernels come up with a service that monolithic kernel might not even need (not realistic kernels of course) which is IPC(Inter process communication). Inter process communication allows running processes to communicate and send and recieve data. That is why kernel entities in user space are called servers, because user programs follow the client server model. they communicate with the kernel service to perform an operation and the server does that for them. μKernels however have some advantages such as:
+1- μKernels are reliable, that if a service crashed it can be fixed or altered. even if it cannot be fixed the kernel would still be running.
+2- Testing is easy on μKernels since loadable software doesn't require you to reload the whole kernel.
+3- Easier to maintain.
+4- μKernels can be easier to adapt for working under a distributed system.
+
+μKernels disadvantages:
+1- Very complicated process management.
+2- IPC bugs can bring the whole system down
+3- Since more μKernels are more abstract, execution time of software is relatively large.
+
+
+Modern examples:-
+
+Monolithic kernels years ago were limited to UNIX and BSD and some other minimal kernels. But, Linux came out of nowhere and proved the effectiveness of monolithic kernels after being considered outdated. So, the only examples I can give about modern monolithic kernels are Linux and FreeBSD.
+
+By then μKernels were the hub of interest and most operating systems researchers and hobbyists starts considering the μ design for their kernels, Thus most modern kernels are micro. Such as, MINIX , GNU Mach/Hurd, SPARTAN. Also Windows NT can be considered micro, but It is called hybrid since it is not fully micro.
+
+
+
+The Tanenbaum-Torvalds debate:
+On the debate, Tanenbaum explicitly expressed that Linux was outdated due to the old monolithic design it uses. And he admitted that microkernels can be slower than monolithic kernels, but with some optimization they could just as fast as monolithic kernels. Also a monolithic design limits and makes portability to different machines harder (as stated above).
+To that Linus did agree that micro is a better design that monolithic and portability on monolithic kernels might have issues. and stated that Linux is more functional and stable than minix.
+
+several famous researchers joined the conversation such as:
+Ken Thompson
+Micheal Kufman
+
+http://oreilly.com/catalog/opensources/book/appa.html
+
+However, For CATernel I've favoured the Micro design, Although monolithic is easier to implement. but for future issues micro kernels are easier to maintain and debug. This kernel is all about reseaching after all, No real work involved.

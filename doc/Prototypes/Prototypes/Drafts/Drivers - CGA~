@@ -1,7 +1,0 @@
-3.2 Text/Video Mode
-==========================
-
-Almost all new kernels and operating systems access and use video mode using the VESA/VBE interface. to interface with the attached video card. however in CATernel we choosed to support legacy and old devices before supporting newer versions, therefore we choosed to use CGA(Color Graphic Adapter) to support video and console.
-There's few differences between CGA and EGA and VGA.
-
-	

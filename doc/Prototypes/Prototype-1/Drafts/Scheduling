@@ -1,0 +1,3 @@
+[PART OF PROC MANAGEMENT] - Scheduling
+=======================================
+Scheduling on CATernel is very basic, It is basically a time-sharing Round robin, Lacking any priorities

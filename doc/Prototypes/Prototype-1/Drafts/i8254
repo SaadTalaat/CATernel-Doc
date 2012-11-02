@@ -1,0 +1,7 @@
+3.5 Intel 8254 PIT(Programmable Interrupt Timer)
+================================================
+
+Due to the problem with RTC periodic interrupts [Appendix A] we had to support another device for time slicing execusion. The next modern device is PIT but still PIT is a legacy device. however, PIT was easier to program that RTC.
+
+PIT has three channels. First channel is for counter divisor, second channel is for RAM refresh counter and third one is for issuing a beep on cassette or speaker on an interval. For the kernel clock we shall only use the first one which is the divisor of the frequency of the PIT to issue on interrupt on a subsequent interval. in CATernel we set this to issue 20 interrupt per second and handle those interrupts by scheduler.
+
