@@ -1,0 +1,51 @@
+Saad Talaat
+2nd of November, 2012
+=====================
+
+Since the overall kernel design is determined, we need to work more on basic services such as multitasking and memory management. Symmetric Multi-Processor Management, at the moment we are only able to multitask over one processor. Of course, we will be using intel facilities to be able to parallelize over multiple processes. There's challenges faced when it comes to parallelizing execution over a centeralized Data Bus and memory, Such as:
+1- Memory Coherency and (making sure that only one processor get acces to a specific memory address at a time).
+2- Cache consistency, Since some caches are shared (e.g. L2/L3) corrupted data should be avoided by a processor after being written by another
+3- Distribute interrupt handling amongst processors.
+4- Avoiding randomized memory accesses.
+
+
+Memory Coherency
+================
+Memory coherency can be simply put as follows. It is preventing a cpu from accessing a memory thunk aligned to (8/16/32/64) that is being used by another cpu(former values differ on different architecture). once a value is locked the data bus is automatically locked, so locking here is basically spinlocks. ia32 supports memory locking using atomic operations via several ways :-
+
+*Automated locking*
+------------------
+Locking a memory address is automatically carried out on several situations
+1- executing xchg instruction that reference memory
+2- Updating segment descriptor
+3- Updating page directory
+4- Aknowledging interrupts
+
+the last 3 cases do not really interest us, but the first instruction can be used to make a software locking to memory address. such a locking mechanism force following memory operations to be atomic. An example for that is the classic unix and very early linux. a very basic mutual execlusion was implemented by merely exchanging the to be locked variable with a new value. Such examples are obsolete and old. With Multiprocessors architectures showing up another problem arised.
+
+*Memory ordering*
+-----------------
+For the sake of performance optimization, more modern processes adopted a new memory ordering(order of loads and stores issued) models. Instead of strong ordering which executes loads and stores with the order they are in the executable code, Modern processors use different memory models where loads and stores don't need to neccessarily done in order they're in the executable.
+Due to that fact, busy waiting on a lock might go wrong. since loop is the first in the executable then modifying the lock comes second we suppose we're working on strong ordering modeled memory access. However, this can go badly wrong by obtaining the lock before executing the loop for instance, Maybe even skipping obtaining lock and starting executing critical region. Thus, cpu needs to be instructed to execute a thunk of code's memory loads and stores in the order they're in the executable. And luckily this is what 'mfence' instruction does. Memory ordering is a strict issue since it all gets messy with processors evelution. 486 and Pentium for instance had a less strict memory ordering model than strong ordering but still most of the time it would use strong ordering. P6 family however almost dropped the strong ordering model which Intel name "write ordered with store buffer forwarding".
+
+a premature implementation for the spinlocks would look like this at this point
+-----------------------------
+lock:
+	popl %eax
+	movl (%eax), %ebx
+	test %ebx,%ebx
+	jnz lock
+	incl %ebx
+	xchgl %ebx,(%eax)
+	mfence
+	ret
+
+unlock:
+	popl %eax
+	movl $0, %ebx
+	xchgl %ebx,(%eax)
+	mfence
+	ret
+-----------------------------
+	Listing X.x
+-----------------------------
