@@ -1,0 +1,73 @@
+Scheduling
+===========
+Scheduling is the process of organizing the context switching between processes in order to achieve multi-tasking
+In prototype1 we're using a simple LIFO (Last In First Out) scheduling algorithm
+
+For a quick recap ,  LIFO refers to the way items stored in a data structure are processed. The last data to be added to the structure will be the first data to be removed. LIFO mechanisms include data structures such as stackss. A LIFO structure can be illustrated with the example of a crowded elevator. When the elevator reaches its destination, the last people to get on are typically the first to get off , the same thing applies to processes , the last process added to the queue is the first process to be taken out of the queue so that another one would take it's place.
+
+another important concet in scheduling is context switching , a "context" is a virtual address space, the executable contained in it, its data etc.
+A "context switch" occurs for a variety of reasons - because a kernel function has been called, the application has been preempted, or because it had yielded its time slice.
+A context switch involves storing the old state and retrieving the new state. The actual information stored and retrieved may include EIP, the general registers, the segment registers, CR3 (and the paging structures), FPU/MMX registers, SSE registers and other things. Because a context switch can involve changing a large amount data it can be the one most costly operation in an operating system.
+
+
+since Resource management is not yet implemented we currently have 2 queues , a ready queue and a running queue after a quantum of time passes
+the schedule function checks the running and ready queues , last process  in the running queue will be poped and replaced with the last process in the ready queue , which is to be scheduled then a context switch to this process occurs with the switch_address_space function.
+
+-----------------------------------------------------
+schedule(void)
+{
+	uint32_t idx= 0;
+	proc_t *proc, *pproc;
+	if(!LIFO_EMPTY(&running_procs))
+	{
+		pproc = LIFO_POP(&running_procs, q_link);
+		printk("[*] Proc running: %d\n",pproc->proc_id);
+	}
+	else
+		printk("[*] No running procs\n");
+
+	if(!FIFO_EMPTY(&ready_procs))
+	{
+		proc = FIFO_POP(&ready_procs);
+		printk("[*] Ready proc: %d\n",proc->proc_id);
+	}
+	else
+	{
+		printk("[*] No ready procs found\n");
+		proc = pproc;
+	}
+
+	if(!LIFO_EMPTY(&running_procs))
+		FIFO_PUSH(&ready_procs, pproc);
+
+	LIFO_PUSH(&running_procs, proc ,q_link);
+
+	printk("[*] Scheduling to process: %d\n", proc->proc_id);
+
+	switch_address_space(proc);
+-----------------------------------------------------
+listing x-y proc.c
+-----------------------------------------------------
+
+switch_address_space fools the CPU in order to switch to another address space , it needs to reset the stack top to point the the new process structure , set the cpu state to the process' value the issues an iret.
+------------------------------------------------------------------
+void
+switch_address_space(proc_t *proc_to_run){
+	proc_to_run->seg_regs.fs = 0x23;
+	proc_to_run->seg_regs.es = 0x23;
+	proc_to_run->seg_regs.gs = 0x23;
+	proc_to_run->seg_regs.ds = 0x23;
+	write_cr3(proc_to_run->cr3);
+	asm volatile("movl %0,%%esp":: "g" (proc_to_run) : "memory");
+	asm volatile("popal");
+	asm volatile("popl %gs\npopl %fs\npopl %es");
+	asm volatile("popl %ds");
+	asm volatile("iret\n5:\n");
+
+	while(1);
+}
+----------------------------------------------------
+listing x-y proc.c switching address space
+----------------------------------------------------
+
+
