@@ -1,3 +1,7 @@
+Saad Talaat
+1st of November, 2012
+======================
+
 Lately in CATernel first prototype has been put to and end since we reached a crossroads point. We had make up our mind to the overall design of the kernel. We had several Options: 1- Monolithic kernel, 2- ExoKernel, 3- μKernel.
 
 Of course the main dilemma would be betwee Monolithic and μKernel since most Exokernels made are for research purposes and not [rel life] daily kernels that an Operating system might use. However, a minimal Exokernel version of CATernel might be supported anyway since It won't be hard to implement.

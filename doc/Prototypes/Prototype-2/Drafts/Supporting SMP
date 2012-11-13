@@ -49,3 +49,27 @@ unlock:
 -----------------------------
 	Listing X.x
 -----------------------------
+
+At this point Intel manuals carry on from memory instructions ordering to the relation between memory ordering and string operations and its atomic properity under multiple processors and interrupts, But this is no use to us at the moment since address spaces forbid interrupts to use user stack. Moreover, generic instructions serializing is a necessity. An exmaple mentioned in Intel manual vol.3 shows how critical instruction serialization could be crucial at some points, This example says: suppose we're switching to protected mode under a multiprocessor envirnoment. we need all real mode instructions to be executed before protected mode is triggered. This is where serializing instructions comes in which makes sure that all instructions before it are executed before the serializing instruction is executed (e.g. CPUID)
+
+
+*Multi-Processor Initialization*
+--------------------------------
+Before mentioning the way Multiprocessing is initialized over an intel machine, we need to support and point out cpuid instruction and collecting information about the machine since we'd be having different initialization models for every machine.
+
+Anyway, MP initialization is done by a MP protocol called Multiprocessor Specification Version. It supports controlled booting of multiple processors, It allows all IA-32 processors to be booted in the same manner and it can boot a system without defined boot processor. This MP protocol defines two types of processors which are bootstrap processor and application processors. after power one processor is selected as bootstrap processor and performs the booting up routines. Other processors are set to application processors.
+
+Bootstrap processor stars by setting up the global data structures and initializes other application processors, following that is the Operating system code execution. when machine is powered up, Application processors wait for an IPI signal from the bootstrap processor and then performs APIC initialization procedure and put itself in halt state.
+
+
+
+
+
+
+
+
+
+
+
+
+
