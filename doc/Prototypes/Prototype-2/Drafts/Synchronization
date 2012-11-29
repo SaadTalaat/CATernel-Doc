@@ -1,0 +1,48 @@
+28 November, 2012
+Saad Talaat
+===================
+
+After the decision to change the CATernel design into microkernel, It became inevitable to implement early synchronization primitives and IPC scheme to convert kernel components into services.
+
+The Basic synchronization primitive is considered the spinlock mentioned in the "Supporting SMP" section. This synchronization primitive is used in active synchronization in kernel only. other type of synchronization primitives is passive synchronization, this is the most used type which includes race conditions.
+
+In the first prototype a minimal structure of the process descriptor was implemented which was suffcient for the first prototype phase. However, moving into multiprocessing environment and to be able to provide a concurrent backend even with a uniprocessor plus the nature of the kernel design obligated us to extend process structure. The old process descriptor structure contained :-
+1- Process context
+2- Process Id
+3- Process Address space
+4- Scheduling states
+5- Pointers Proc List and running Procs LIFO
+
+At this point also only three process states were supported
+1- Process ready to run [RUNNABLE]
+2- Process descriptor is undefined [EMPTY]
+3- Process is not ready [NON_RUNNABLE]
+
+Of course with such a structure processes are not able to support events, and doesn't even support them at all.
+
+Supporting race conditions
+==========================
+A concurrent environment is unable to work in a consistent and proper way without race conditions of course. for a process/service to be able to process locking/unlocking events of a synchronization primitive it must either busy wait or block. However busy waiting is time wasting like in spinlocks and it probably would lead into deadlocks with prioritized processes design.
+Blocking a process is simply done by two components, Scheduler and a waiting queue. Process simply waits on race conditions locks or IO events with either a state of those states [WAIT_INTERRUPTIBLE] or [WAIT_UNINTERRUPTIBLE].
+
+
+Case Studies
+============
+
+GNU Mach
+--------
+GNU Mach impelements wait queues implicitly into a thread structure, with only one type of waiting [THREAD_WAIT]. The thread state is changed into wait so the scheduler won't pick it the next time it is invoked. However such implementation is minimal compared to the Linux implementation.
+
+
+Minix
+--------
+Minix implementation to IPC is rather complicated, actually very complicated. it doesn't make use of any processes blocking or suspention and ipc is done via a seperate server not as a global entity. This implementation is similar to the System V semaphores implementation. which is rather obslete.
+
+
+Linux - POSIX
+-------------
+The way Linux implements locking and IPC waiting is by spinlocking using a unified locking way called ipc_lock. so the lock is being polled on, scheduler however makes use of this waiting into blocking a thread implicitly using the Linux waiting queues in the form of semaphore queues. However I didn't take a long glimpse at the linux semaphore, but maybe they're somehow complicated due to the fact that Linux's first semaphore implementation was System V and still somehow.
+
+SPARTAN
+-------
+the SPARTAN waiting queues are very similar if not identical to the linux waiting queues, however its semaphores makes use of waiting queue explicitly. Which makes the SPARTAN semaphores and ipc more effective and fast than any other.

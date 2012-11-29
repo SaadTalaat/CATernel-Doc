@@ -61,15 +61,4 @@ Anyway, MP initialization is done by a MP protocol called Multiprocessor Specifi
 
 Bootstrap processor stars by setting up the global data structures and initializes other application processors, following that is the Operating system code execution. when machine is powered up, Application processors wait for an IPI signal from the bootstrap processor and then performs APIC initialization procedure and put itself in halt state.
 
-
-
-
-
-
-
-
-
-
-
-
-
+Before initializing processors, cpu information should be collected in order to perform a right initialization sequence. such information collection should be carried out after memory initialization on the BSP since values like global cpu use memory component to allocate space for itself. however we can still store it in absolute address. and we might need that in parallelizing kernel boot up.

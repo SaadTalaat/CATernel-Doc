@@ -1,0 +1,6 @@
+
+APIC Initialization
+--------------------
+1- Due to the fact that APIC registers are at physical address 0xfee00000 we had to identity map the APIC register 4KB page, so we had to modify the kernel address space test to exclude this page from test.
+2- Bochs APIC0 error, During dumping information of APIC specifically LAVR register, bochs had an error with APIC in the code. however I don't know yet if it is solvable. so this to be edited soon.
+3- Different DFR Values, While dumping the values of DFR bochs it showed 0xffffffff while on qemu 0xf0000000 this might be due to the virtualization of the real APIC on hosting for the qemu. yet to be investigated too.
