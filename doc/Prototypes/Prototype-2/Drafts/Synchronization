@@ -25,6 +25,16 @@ Supporting race conditions
 A concurrent environment is unable to work in a consistent and proper way without race conditions of course. for a process/service to be able to process locking/unlocking events of a synchronization primitive it must either busy wait or block. However busy waiting is time wasting like in spinlocks and it probably would lead into deadlocks with prioritized processes design.
 Blocking a process is simply done by two components, Scheduler and a waiting queue. Process simply waits on race conditions locks or IO events with either a state of those states [WAIT_INTERRUPTIBLE] or [WAIT_UNINTERRUPTIBLE].
 
+However There's difference between Synchronization process communication, Inter-service/kernel communication and Standard InterProcess Communication.
+
+Synchronization Communication
+=============================
+Race conditions are somehow an IPC mechanism from semaphores to message queues. However there's different implementations for such synchronization mechanisms and specially using waiting queues. for example Linux kernel makes no use of waiting queues but only timers, Mach makes use of a single waiting queue and SPARTAN makes use of a multiple waiting queues with also timers same as linux only renamed to timeouts.
+
+At this point the [Timers] implementation seems convenient. Possible ways to implement a timer are by the RTC or APIC timer, of course with having a nearly SMP environment apply an RTC timer seems inconvenient. APIC timers however also has one-shot/periodic/tsc timers. a one-shot timer might be convient also. Another way implementing timers is by setting a timer relative to Scheduler timer interrupts with the timer interrupt as a one basic unit of timer.
+
+A pre-mature implemenation for a synchronization based on timers and waiting queues is to update timers on each tick with extending implementation of timers via waiting queues and same for synchronization primitives.
+
 
 Case Studies
 ============
@@ -36,12 +46,12 @@ GNU Mach impelements wait queues implicitly into a thread structure, with only o
 
 Minix
 --------
-Minix implementation to IPC is rather complicated, actually very complicated. it doesn't make use of any processes blocking or suspention and ipc is done via a seperate server not as a global entity. This implementation is similar to the System V semaphores implementation. which is rather obslete.
-
+Minix implementation to IPC is rather complicated, actually very complicated. it doesn't make use of any processes blocking or suspention and ipc is done via a seperate server not as a global entity. This implementation is similar to the System V semaphores implementation. This implementation is for generic IPC purposes and Svr5 Standardization
 
 Linux - POSIX
 -------------
-The way Linux implements locking and IPC waiting is by spinlocking using a unified locking way called ipc_lock. so the lock is being polled on, scheduler however makes use of this waiting into blocking a thread implicitly using the Linux waiting queues in the form of semaphore queues. However I didn't take a long glimpse at the linux semaphore, but maybe they're somehow complicated due to the fact that Linux's first semaphore implementation was System V and still somehow.
+The way Linux implements locking and IPC waiting is by spinlocking using a unified locking way called ipc_lock. so the lock is being polled on, scheduler however makes use of this waiting into blocking a thread implicitly using the Linux waiting queues in the form of semaphore queues. However This implementation at ipc/sem.c is a System V semaphore which we don't really need at the moment. since it's for IPC Purposes not synchronization.
+another implementation of the semaphore is used in kernel/semaphore explicitly makes use of waiting and task state.
 
 SPARTAN
 -------
