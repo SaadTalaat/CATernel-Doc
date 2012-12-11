@@ -35,6 +35,13 @@ At this point the [Timers] implementation seems convenient. Possible ways to imp
 
 A pre-mature implemenation for a synchronization based on timers and waiting queues is to update timers on each tick with extending implementation of timers via waiting queues and same for synchronization primitives.
 
+Optimal Implementation
+======================
+When it came to implementation various designs and schemes came up to my mind (personally) not to mention other implementations adopted by other kernels.
+
+*Semaphores*
+implementing the semaphore's P&V with dijkstra's algorithm without using spinlocks isn't practical. for example to use a semaphore which only contains the integer value of the semaphore and ups and downs which directly puts an executing entity into a generic waiting process list makes it hard to determine which procs/threads are waiting for this specific resource/primitive and wake them up. a hack would be to make a list of pointers or indexes of thes procs into the generic waiting list in the semaphore itself, but this would cause contention over the generic waiting list, another memory unfriendly implementation is to make a waiting list per resource.
+Within a Multiprocessor environment old irq_enable/disable won't work to keep the an up/down operation atomic. thus a spinlock implementation is a must. of course disabling all processors irqs is nonsense.
 
 Case Studies
 ============
