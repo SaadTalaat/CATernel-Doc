@@ -29,7 +29,11 @@ How CATernel works?
 
 Future plans:-
 - NUMA
-- any crap goes here..
+- better process management 
+- Multiprocessors management 
+- file systems support , disk management 
+- any crap goes here.. << are we talking short or long term ?
 --------------
 Notes:
-Should we discuss the design/implementation of each component on it's own? 
+Should we discuss the design/implementation of each component on it's own? << depends on the duration of the presentation
+
