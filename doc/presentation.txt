@@ -1,0 +1,35 @@
+
+
+=======
+On presentation we should avoid technical details
+=======
+
+
+The What, Why, How?
+-------------------
+What is CATernel?
+- Microkernel - SMP - Interactive
+- Goals [Research][try new tricks]
+- Inspirations
+
+Why CATernel/MicroKernel?
+- Developer friendly
+- Community Kickstart
+- Performance Optimization
+- Ease of Modification
+
+How CATernel works?
+- CATernel Components
+	- Process/thread Manager
+	- Scheduling/Time Management
+	- Memory Management
+	- Interrupt Handling
+	- Symmetric Multiprocessing
+	- Synchronization under both Uni/Multi[P]
+
+Future plans:-
+- NUMA
+- any crap goes here..
+--------------
+Notes:
+Should we discuss the design/implementation of each component on it's own? 
