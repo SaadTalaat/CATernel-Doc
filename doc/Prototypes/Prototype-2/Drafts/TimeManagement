@@ -1,0 +1,35 @@
+Time Management
+----------------
+
+1-Delay function 
+The delay function was implemented to make the cpu waste cycles for a few microseconds without
+being interrupted , this approach came in handy in booting up the Application processors "refer to Supproting SMP"
+
+The delay function is hardware based , It uses PIT (i8254_calibrate_delay_loop) to calibrate the cpu to figure out how many loops are executed in 1us, which is what we will
+refer to as the "delay_loop_const"
+
+The delay loop is pointless , it's only a waste of cpu cycles 
+--------------
+listing x-1 asm_delay_loop
+--------------
+{
+        asm volatile ("movl %0 ,%%ecx\n\t"
+		      "0:lahf\n\t"
+		      "dec %%ecx\n\t"
+		      "jnz 0b" : : "a"(t));
+}
+------------
+so now we can simply make the cpu wait for X micor seconds simply by multiplying the time we need and the delay_loop_const
+----------------------
+listing x-2 delay()
+---------------------
+	
+void delay(uint32_t microsec)
+{
+	cli();
+	asm_delay_loop(microsec * delay_loop_const);
+	sti();
+}
+  
+-------------------------
+
