@@ -1,4 +1,5 @@
-Saad Talaat
+Saad Talaat , Menna Essa
+This will still need numbering when you write it in the doc ; but i don't know what's the chapter so i'll leave it for now 
 2nd of November, 2012
 =====================
 
@@ -62,3 +63,96 @@ Anyway, MP initialization is done by a MP protocol called Multiprocessor Specifi
 Bootstrap processor stars by setting up the global data structures and initializes other application processors, following that is the Operating system code execution. when machine is powered up, Application processors wait for an IPI signal from the bootstrap processor and then performs APIC initialization procedure and put itself in halt state.
 
 Before initializing processors, cpu information should be collected in order to perform a right initialization sequence. such information collection should be carried out after memory initialization on the BSP since values like global cpu use memory component to allocate space for itself. however we can still store it in absolute address. and we might need that in parallelizing kernel boot up.
+
+CPU information is found in the floating point structure which is usually stored in one of Four places: 
+(1) in the first kilobyte of the extended BIOS data area (EBDA)
+(2) the last kilobyte of base memory, 
+(3) the top of physical memory 
+(4) the BIOS read-only memory space between 0xe0000 and 0xfffff. 
+we'll need search these areas for the "_MP_" signature  which denotes the start of the floating pointer structure. 
+Absence of this structure indicates that the system is not MP compliant ; if not the system will continue with UP setup 
+
+----------------------------------------------------
+Listing x-1 : arch/x86/mp/smp.c - find_set_fps
+----------------------------------------------------
+
+uint32_t length[2] = { 1024, 64 * 1024 };	
+	addr[0] = (uint8_t *) PA2KA(ebda ? (uint32_t)ebda : 639 * 1024);
+	for (i = 0; i < 2; i++) {
+		for (j = 0; j < length[i]; j += 16) {
+			if ((*((uint32_t *) &addr[i][j]) ==
+			    FS_SIGNATURE) && (fps_check(&addr[i][j])==0)) {
+				fs = (fpstruct_t *) &addr[i][j];
+				goto fs_found;
+			}
+		}
+	}
+-----------------------------------------------------
+
+
+floating point sturcture looks like this : 
+
+-----------------------------------
+figure x-1 floating point structure
+-------------------------------------
+Fps image here
+-------------------------------------
+
+Next step is to read the Configuration table's address form the floating point structure which will include all cpu's information
+"ct=(ct_hdr *)PA2KA((uint32_t)fs->config_addr);" 
+The configuration table consists of a header , base table and an extended table.
+--------------------------------
+figure x-2 Configuration table
+--------------------------------
+ct1 image here
+--------------------------------
+with help of the CT header -arch/x86/mp/smp.c - ct_entries() - , you'll be able to locate the processor entries and read them
+most of the fields will come in handy later , refer to smp.h to see the full structure of different base entries
+-------------------------------
+figure x-3 processor entry
+------------------------------
+processor img here
+------------------------------
+
+now that we have all needed cpu info , we can finally signal them to wake up by sending an INIT IPI through the LAPIC in 0xfee00000
+we're sending the IPI based on the processor's APIC ID , ofcourse it's a bad idea to send an INIT IPI or SIPI to boot strap since it's already up
+so we make sure we check the bootstrap flag in the processor's entry we parsed earlier. 
+----------------
+listing x-1 arch/x86/mp/apic.c - apic_init_ipi
+---------------
+void apic_init_ipi(uint8_t lapicid)
+{
+	icr_t icr;
+	icr.lo = lapic[ICR_LOW];
+	icr.hi = lapic[ICR_HIGH];	
+	icr.delivery_mode = ICR_INIT;
+	icr.dest_mode = PHYSICAL;
+	icr.level = LEVEL_ASSERT;
+	icr.trigger_mode = TRIGMOD_LEVEL;
+	icr.shorthand = NO_SH;
+	icr.vector = 0;
+	icr.dest =lapicid;
+	lapic[ICR_LOW] = icr.hi;
+	lapic[ICR_HIGH] = icr.lo;
+}
+--------------------
+Intel's specification shows that we need to wait for 20 us till an IPI is successfully delivered , then wait for 
+1000 us for a processor to wake up In order to send the Startup IPI which is repsonsible for making the AP jump to custom bootup code to set it up
+, 200 us are needed to deliver this IPI ; 
+
+**SIPI is still not working so , to be continued ** 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
