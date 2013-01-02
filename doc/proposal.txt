@@ -16,5 +16,3 @@ best performance.
 
 This is the long term plan of the project. Many many plan B[s] might take place in the process. 
 
-==========================================
-(1) Unlike other commercial kernels that apply software driven paging.
