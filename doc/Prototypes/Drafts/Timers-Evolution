@@ -1,0 +1,15 @@
+Saad Talaat
+9th of January 2013
+===================
+
+In earlier documentations(e.g. PIT/i8254, Problems faced), It was mentioned that we had a problem with the RTC Clock which we were intending to use in scheduling[1] Which we had altered/avoided by using the PIT timer. PIT timer is indeed a legacy device since most kernels currently use differnet timers such as linux using the APIC local timers for scheduling, and hpet[but not for scheduling] but as a usable user space timer driver[2]. Nevertheless, HPET is indeed an evolutionary technology that would provide better real-time/multimedia scheduling and QoS Level management. Thus, As Intel/Microsoft indicated newer OS/Kernels should replace the PIT i8254 legacy timer with HPET, Although LAPIC Timers are currently sufficient and keeps up with the emerging growing processors growth and enables parallelism due to its local nature which is evidently glowing on linux kernel which performs quite fine using apics. Using high frequency Timers however is not practical atm the moment since it's almost useless with the growth of chips performance which faces the problem of slow memory access and thus memory wall which negates the effect of high frequency timers[3]. Futhermore, The higher clock frequencies are intended to improve performance and HPET is excessively faster than needed or currently needed due to the von neumann bottleneck. High throughput is achivable with LAPIC timer and therefore keeping up with emerging scalability technologies...to be continued. 
+
+
+
+
+
+References
+----------
+[1] Appendix A- Problems Faced, Prototype-1. CATernel-Documentation
+[2] High Precision Event Timer Driver for Linux - http://www.kernel.org/doc/Documentation/timers/hpet.txt
+[3] Intel Platform 2015
