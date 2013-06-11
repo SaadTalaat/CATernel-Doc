@@ -4,3 +4,15 @@ APIC Initialization
 1- Due to the fact that APIC registers are at physical address 0xfee00000 we had to identity map the APIC register 4KB page, so we had to modify the kernel address space test to exclude this page from test.
 2- Bochs APIC0 error, During dumping information of APIC specifically LAVR register, bochs had an error with APIC in the code. however I don't know yet if it is solvable. so this to be edited soon.
 3- Different DFR Values, While dumping the values of DFR bochs it showed 0xffffffff while on qemu 0xf0000000 this might be due to the virtualization of the real APIC on hosting for the qemu. yet to be investigated too.
+
+Context Switching & Scheduling
+-----------------------------
+A proper way to make a process switch in a healthy manner from Kernel address space to its address space is to Sharing its PEB which holds information about it like page directory and cpu status. a previous approach was to share Whole process table as readable for user processes address spaces. However, this approach was poor and insecure.
+
+Despite that a process switches to ring 0 privilege during scheduling process the scheduling structures would be still invisibile to it and would cause a page fault execption. to provide a full kernel mode an address space is being changed to kernel's to prevent any either GP or PF exceptions.
+
+
+Initial ramdisk & GRUB
+----------------------
+
+an initrd was an entity that we had to provide before any microkernel execlusive structures to loosen and ease the process of developing services and driver/kmods. Grub by default loads any module after its last loaded module which was in initrd case the kernel itself. This contradicted with the fact that we use a boot time allocator to allocate boot time heaps to hold early structures like Page tables and process tables. we did an easy approach in which we had to statically allocate two pages for initrd before allocating any early heaps.
