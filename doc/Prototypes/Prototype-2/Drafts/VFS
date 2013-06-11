@@ -1,0 +1,58 @@
+Virtual File System
+--------------------
+
+A virtual file system is not a disk or a network file system , It's rather and abstracion that the operating system provides in order to unify differnt file system calls , For example rather that calling ext2_open you can use the virtual file system read call instead thus allowing any calls to be file system independent 
+
+------------
+VFS GRAPH HERE
+fig x.1
+-----------
+
+A simple way to accomlish this is to have the node structure store specific filesystem function pointers which are then called by the kernel 
+
+currently we're supporting : 
+
+
+Open : Called when a node is opened .
+Close : Called when the node is closed.
+Read : Called on read
+Write :Called on write
+Readdir : If the current node is a directory, it reads it's contents and return the next directory entry inside it.
+Finddir : We also need a way of finding a child node in a directory.	
+
+Initrd
+-------
+
+Initrd , stading for initial RAM disk is a small file system that gets loaded into memory when the kernel boots up ..
+Many modern operating system kernels, such as Mach , do not by themselves contain enough mechanism to get the system fully operational: they require the presence of additional software modules at boot time in order to access devices, mount file systems, etc. While these additional modules could be embedded in the main OS image along with the kernel itself, and the resulting image be split apart manually by the operating system when it receives control, it is often more flexible, more space-efficient, and more convenient to the operating system and user if the boot loader can load these additional modules independently in the first place. 
+Our version of initrd file system is the simplest it could be as we're using a flat file system with the following format: 
+-----
+Initrd fs img here
+fig x.2
+----------
+
+to make things easier we've included a tool that creates the initrd image in the tools/ directory.
+
+The initrd module Implements the VFS standards to match our small file system , we'll only need 
+Read , Finddir and Readdir.
+
+Grub loads the initrd image right after the kernel in memory ; GRUB communicates the location of this file to us via the multiboot information structure defined in multiboot.h 
+
+
+----
+multiboot.info here
+----
+
+for more information multi boot specification refer to http://www.gnu.org/software/grub/manual/multiboot/multiboot.html
+
+After loading the modules into memory via grub , It's now just a matter of applying files systems operations in order to read the contents 
+
+----
+working initrd image here
+----
+
+
+
+
+
+
